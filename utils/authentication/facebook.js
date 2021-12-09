@@ -28,7 +28,7 @@ async function getFacebookUserData(code) {
         code,
       },
     });
-    console.log(data); // { access_token, token_type, expires_in }
+    // console.log(data); // { access_token, token_type, expires_in }
     return data.access_token;
   };
 
@@ -41,7 +41,7 @@ async function getFacebookUserData(code) {
       access_token: accessToken,
     },
   });
-  console.log(data); // { id, email, first_name, last_name }
+  //   console.log(data); // { id, email, first_name, last_name }
   return data;
 }
 module.exports = { getFacebookLoginUrl, getFacebookUserData };
