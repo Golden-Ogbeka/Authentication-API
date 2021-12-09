@@ -17,7 +17,7 @@ const getFacebookLoginUrl = () => {
 
 async function getFacebookUserData(code) {
   // Get token from code
-  const accessToken = async function getAccessTokenFromCode(code) {
+  const accessToken = async function getAccessTokenFromCode() {
     const { data } = await axios({
       url: 'https://graph.facebook.com/v4.0/oauth/access_token',
       method: 'get',
