@@ -5,6 +5,7 @@ const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const AuthenticationRoutes = require('./routes/AuthenticationRoutes');
+const UserRoutes = require('./routes/UserRoutes');
 const db = require('./utils/db');
 
 //setup server
@@ -27,7 +28,7 @@ server.use(
   })
 );
 
-server.use('/', [AuthenticationRoutes]);
+server.use('/', [AuthenticationRoutes, UserRoutes]);
 
 // For all routes that aren't implemented
 server.use((req, res) => {

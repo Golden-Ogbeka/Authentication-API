@@ -8,9 +8,6 @@ const googleConfig = new google.auth.OAuth2(
 );
 
 function getGoogleAuthURL() {
-  /*
-   * Generate a url that asks permissions to the user's email and profile
-   */
   const scopes = [
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
@@ -19,14 +16,13 @@ function getGoogleAuthURL() {
   return googleConfig.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',
-    scope: scopes, // If you only need one scope you can pass it as string
+    scope: scopes,
   });
 }
 
 async function getGoogleUser({ code }) {
   const { tokens } = await googleConfig.getToken(code);
 
-  // Fetch the user's profile with the access token and bearer
   const googleUser = await axios
     .get(
       `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`,

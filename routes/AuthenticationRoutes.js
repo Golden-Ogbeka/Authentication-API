@@ -3,7 +3,6 @@ const UserModel = require('../models/User.js');
 const bcryptjs = require('bcryptjs');
 const EmailTransporter = require('../utils/nodemailer/index.js');
 const uuid = require('uuid'); //to get JWT_SECRET
-const AuthenticationMiddleware = require('../middlewares/authentication');
 const JWT = require('jsonwebtoken');
 const {
   getGoogleAuthURL,
@@ -119,13 +118,13 @@ router.get('/api/login/facebook', async (req, res) => {
 // Facebook login callback
 router.get('/auth/facebook/callback', async (req, res) => {
   try {
-    if (!req.body.code) {
+    if (!req.query.code) {
       return res.status(400).json({
         status: 'failed',
         message: 'Callback code is required',
       });
     }
-    const user = await getFacebookUserData(req.body.code);
+    const user = await getFacebookUserData(req.query.code);
 
     if (!user) {
       return res.status(500).json({
@@ -381,19 +380,6 @@ router.post('/api/reset-password', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Couldn't reset password",
-    });
-  }
-});
-
-// Get all users
-router.get('/api/users', AuthenticationMiddleware, async (req, res) => {
-  try {
-    const Users = await UserModel.find({}, { name: 1, email: 1 });
-
-    return res.json({ Users });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Couldn't get users",
     });
   }
 });
