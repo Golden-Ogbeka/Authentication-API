@@ -13,7 +13,10 @@ const UserSchema = new Schema({
     // select: false,
     required: true,
   },
-  verificationCode: { type: String, select: false },
+  verificationCode: {
+    type: String,
+    //  select: false
+  },
   phone: String,
   gender: String,
   address: String,

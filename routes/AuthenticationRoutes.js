@@ -1,22 +1,199 @@
 const express = require('express');
 const UserModel = require('../models/User.js');
 const bcryptjs = require('bcryptjs');
-
+const EmailTransporter = require('../utils/nodemailer/index.js');
+const uuid = require('uuid'); //to get JWT_SECRET
+const AuthenticationMiddleware = require('../middlewares/authentication');
+const JWT = require('jsonwebtoken');
+const {
+  getGoogleAuthURL,
+  getGoogleUser,
+} = require('../utils/authentication/google');
+const {
+  getFacebookLoginUrl,
+  getFacebookUserData,
+} = require('../utils/authentication/facebook');
 const router = express.Router();
 
-// Get all users
-router.get('/api/users', async (req, res) => {
+// Google Login
+router.get('/api/login/google', async (req, res) => {
   try {
-    const Users = await UserModel.find({}, { name: 1, email: 1 });
-
-    return res.json({ Users });
+    const URL = await getGoogleAuthURL();
+    return res.json({
+      status: 'success',
+      URL,
+    });
   } catch (error) {
     return res.status(500).json({
-      message: "Couldn't get users",
+      message: "Couldn't login through Google",
     });
   }
 });
 
+//Google Login callback
+router.get('/auth/google/callback', async (req, res) => {
+  try {
+    const user = await getGoogleUser(req.query);
+
+    if (!user) {
+      return res.status(500).json({
+        message: 'Login unsuccessful',
+      });
+    }
+
+    const { email } = user;
+    const existingUser = await UserModel.findOne({ email });
+    if (!existingUser) {
+      // Create the user and login
+      const newUser = await UserModel.create({
+        email: user.email,
+        password: user.email,
+        isVerified: true,
+        name: user.name,
+      });
+      const { email } = newUser;
+      const userToken = JWT.sign(
+        {
+          email,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: '7d',
+          issuer: 'Golden Ogbeka',
+        }
+      );
+      return res.json({
+        status: 'success',
+        message: 'Sign in successful',
+        User: {
+          email: newUser.email,
+          name: newUser.name,
+          token: userToken,
+          isVerified: true,
+        },
+      });
+    }
+    //    If user already exists
+    const userToken = JWT.sign(
+      {
+        email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+        issuer: 'Golden Ogbeka',
+      }
+    );
+    return res.json({
+      status: 'success',
+      message: 'Sign in successful',
+      User: {
+        email: existingUser.email,
+        name: existingUser.name,
+        token: userToken,
+        isVerified: true,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Couldn't login through Google",
+    });
+  }
+});
+
+// Facebook Login
+router.get('/api/login/facebook', async (req, res) => {
+  try {
+    const URL = await getFacebookLoginUrl();
+    return res.json({
+      status: 'success',
+      URL,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Couldn't login through Facebook",
+    });
+  }
+});
+
+// Facebook login callback
+router.get('/auth/facebook/callback', async (req, res) => {
+  try {
+    if (!req.body.code) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Callback code is required',
+      });
+    }
+    const user = await getFacebookUserData(req.body.code);
+
+    if (!user) {
+      return res.status(500).json({
+        message: 'Login unsuccessful',
+      });
+    }
+
+    const { email } = user;
+    const existingUser = await UserModel.findOne({ email });
+    if (!existingUser) {
+      // Create the user and login
+      const newUser = await UserModel.create({
+        email: user.email,
+        password: user.email,
+        isVerified: true,
+        name: user.name,
+      });
+      const { email } = newUser;
+      const userToken = JWT.sign(
+        {
+          email,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: '7d',
+          issuer: 'Golden Ogbeka',
+        }
+      );
+      return res.json({
+        status: 'success',
+        message: 'Sign in successful',
+        User: {
+          email: newUser.email,
+          name: newUser.name,
+          token: userToken,
+          isVerified: true,
+        },
+      });
+    }
+    //    If user already exists
+    const userToken = JWT.sign(
+      {
+        email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+        issuer: 'Golden Ogbeka',
+      }
+    );
+    return res.json({
+      status: 'success',
+      message: 'Sign in successful',
+      User: {
+        email: existingUser.email,
+        name: existingUser.name,
+        token: userToken,
+        isVerified: true,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Couldn't login through Facebook",
+    });
+  }
+});
+
+// Local Login
 router.post('/api/login', async (req, res) => {
   try {
     if (!req.body.email || !req.body.password) {
@@ -28,7 +205,7 @@ router.post('/api/login', async (req, res) => {
     let { email, password } = req.body;
 
     const User = await UserModel.findOne({
-      email: req.body.email,
+      email: email,
     });
 
     if (!User) {
@@ -46,10 +223,25 @@ router.post('/api/login', async (req, res) => {
         message: 'Invalid email or password',
       });
     }
+    const userToken = JWT.sign(
+      {
+        email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+        issuer: 'Golden Ogbeka',
+      }
+    );
     return res.json({
       status: 'success',
       message: 'Sign in successful',
-      User: { email: User.email, name: User.name },
+      User: {
+        email: User.email,
+        name: User.name,
+        token: userToken,
+        isVerified: true,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -80,21 +272,16 @@ router.post('/api/register', async (req, res) => {
     const hash = await bcryptjs.hash(password, salt);
     password = hash;
 
-    await bcryptjs.genSalt(10, async (err, salt) => {
-      if (err) {
-        throw err;
-      }
-      let User = await UserModel.create({
-        name,
-        email,
-        password,
-      });
+    let User = await UserModel.create({
+      name,
+      email,
+      password,
+    });
 
-      return res.json({
-        status: 'success',
-        message: 'Sign up successful',
-        User: { email: User.email, name: User.name },
-      });
+    return res.json({
+      status: 'success',
+      message: 'Sign up successful',
+      User: { email: User.email, name: User.name },
     });
   } catch (error) {
     return res.status(500).json({
@@ -104,5 +291,111 @@ router.post('/api/register', async (req, res) => {
 });
 
 // Forgot password routes
+router.post('/api/forgot-password', async (req, res) => {
+  try {
+    if (!req.body.email) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Incomplete fields',
+      });
+    }
+    let { email } = req.body;
+
+    const existingUser = await UserModel.findOne({ email });
+    if (!existingUser) {
+      return res.json({
+        status: 'failed',
+        message: "You aren't a registered user",
+      });
+    }
+
+    const token = uuid.v4().substr(0, 5);
+
+    existingUser.verificationCode = token;
+    await existingUser.save();
+
+    // Send email
+    await EmailTransporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Forgot Password',
+      text: `Your verification token to login is: ${token}`,
+    });
+
+    return res.json({
+      status: 'success',
+      message: 'Reset token sent',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Couldn't reset password",
+    });
+  }
+});
+
+// Reset Password
+router.post('/api/reset-password', async (req, res) => {
+  try {
+    if (!req.body.email || !req.body.password || !req.body.token) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Incomplete fields',
+      });
+    }
+    let { email, password, token } = req.body;
+
+    const existingUser = await UserModel.findOne({ email });
+    if (!existingUser) {
+      return res.json({
+        status: 'failed',
+        message: "You aren't a registered user",
+      });
+    }
+
+    if (existingUser.verificationCode !== token) {
+      return res.json({
+        status: 'failed',
+        message: 'Invalid token',
+      });
+    }
+
+    const salt = await bcryptjs.genSalt(10);
+    const hash = await bcryptjs.hash(password, salt);
+    password = hash;
+
+    existingUser.password = password;
+    await existingUser.save();
+
+    // Send email
+    await EmailTransporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset',
+      text: `This is to notify you that your password has been changed`,
+    });
+
+    return res.json({
+      status: 'success',
+      message: 'Password reset successful',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Couldn't reset password",
+    });
+  }
+});
+
+// Get all users
+router.get('/api/users', AuthenticationMiddleware, async (req, res) => {
+  try {
+    const Users = await UserModel.find({}, { name: 1, email: 1 });
+
+    return res.json({ Users });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Couldn't get users",
+    });
+  }
+});
 
 module.exports = router;
