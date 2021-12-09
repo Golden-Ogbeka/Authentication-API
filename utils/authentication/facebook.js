@@ -17,7 +17,7 @@ const getFacebookLoginUrl = () => {
 
 async function getFacebookUserData(code) {
   // Get token from code
-  const accessToken = async function getAccessTokenFromCode() {
+  let accessToken = async function getAccessTokenFromCode() {
     const { data } = await axios({
       url: 'https://graph.facebook.com/v4.0/oauth/access_token',
       method: 'get',
@@ -31,6 +31,8 @@ async function getFacebookUserData(code) {
     // console.log(data); // { access_token, token_type, expires_in }
     return data.access_token;
   };
+
+  accessToken = await accessToken();
 
   //  Get user
   const { data } = await axios({
