@@ -186,6 +186,7 @@ router.get('/auth/facebook/callback', async (req, res) => {
       },
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Couldn't login through Facebook",
     });
