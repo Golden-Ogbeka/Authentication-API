@@ -22,9 +22,9 @@ async function getFacebookUserData(code) {
       url: 'https://graph.facebook.com/v4.0/oauth/access_token',
       method: 'get',
       params: {
-        client_id: process.env.APP_ID_GOES_HERE,
-        client_secret: process.env.APP_SECRET_GOES_HERE,
-        redirect_uri: 'https://www.example.com/authenticate/facebook/',
+        client_id: process.env.FACEBOOK_APP_ID,
+        client_secret: process.env.FACEBOOK_APP_SECRET,
+        redirect_uri: process.env.FACEBOOK_REDIRECT_URL,
         code,
       },
     });
