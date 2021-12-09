@@ -23,6 +23,7 @@ router.get('/api/login/google', async (req, res) => {
       URL,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Couldn't login through Google",
     });
@@ -94,6 +95,7 @@ router.get('/auth/google/callback', async (req, res) => {
       },
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Couldn't login through Google",
     });
@@ -109,6 +111,7 @@ router.get('/api/login/facebook', async (req, res) => {
       URL,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Couldn't login through Facebook",
     });
@@ -187,6 +190,7 @@ router.get('/auth/facebook/callback', async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    console.log(error);
     return res.status(500).json({
       message: "Couldn't login through Facebook",
     });
@@ -244,6 +248,7 @@ router.post('/api/login', async (req, res) => {
       },
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Couldn't login",
     });
@@ -284,6 +289,7 @@ router.post('/api/register', async (req, res) => {
       User: { email: User.email, name: User.name },
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Couldn't register",
     });
@@ -327,6 +333,7 @@ router.post('/api/forgot-password', async (req, res) => {
       message: 'Reset token sent',
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Couldn't reset password",
     });
@@ -379,6 +386,7 @@ router.post('/api/reset-password', async (req, res) => {
       message: 'Password reset successful',
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Couldn't reset password",
     });
