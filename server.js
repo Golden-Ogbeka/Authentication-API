@@ -5,7 +5,7 @@ const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const AuthenticationRoutes = require('./routes/AuthenticationRoutes');
-const db = require('./db');
+const db = require('./utils/db');
 
 //setup server
 const server = express();
@@ -30,8 +30,7 @@ server.use(
 server.use('/', [AuthenticationRoutes]);
 
 // For all routes that aren't implemented
-server.all((err, req, res, next) => {
-  console.log(err.stack);
+server.use((req, res) => {
   return res.status(501).send({
     status: 'FAILED',
     message: 'Not Implemented',
