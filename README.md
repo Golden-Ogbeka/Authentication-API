@@ -12,7 +12,7 @@ NodeJS, MongoDB and Express JS, JSON Web Tokens, Google and Facebook OATHS for a
 
 ## Live URL
 
-[https://authentication-api-by-golden.herokuapp.com/](https://authentication-api-by-golden.herokuapp.com/)
+[https://authentication-api-golden-ogbeka.onrender.com/](https://authentication-api-golden-ogbeka.onrender.com/)
 
 ## App Setup
 
